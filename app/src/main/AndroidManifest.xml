@@ -16,7 +16,7 @@
         android:theme="@style/Theme.AbsensiApp"
         tools:targetApi="31">
         <activity
-            android:name=".CreatenoteActivity"
+            android:name=".CreateNoteActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

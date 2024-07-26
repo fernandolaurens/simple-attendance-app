@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id ("kotlin-android-extensions")
-    id ("kotlin-kapt")
+    id("kotlin-android")
+    id("kotlin-kapt")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
 }
@@ -37,6 +37,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        viewBinding = true
+    }
+
 }
 
 dependencies {

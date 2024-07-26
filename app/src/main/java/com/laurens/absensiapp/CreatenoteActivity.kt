@@ -20,13 +20,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.laurens.absensiapp.databinding.ActivityCreatenoteBinding
+import com.laurens.absensiapp.databinding.LayoutDeleteBinding
+import com.laurens.absensiapp.databinding.LayoutUrlBinding
 import com.laurens.database.NoteDatabase
 import com.laurens.model.ModelNote
-import kotlinx.android.synthetic.main.activity_createnote.*
-import kotlinx.android.synthetic.main.layout_delete.*
-import kotlinx.android.synthetic.main.layout_url.*
-import kotlinx.android.synthetic.main.layout_url.view.*
-
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,14 +33,16 @@ class CreateNoteActivity : AppCompatActivity() {
     private var alertDialog: AlertDialog? = null
     private var selectImagePath: String? = null
     private var modelNoteExtra: ModelNote? = null
+    private lateinit var binding: ActivityCreatenoteBinding
 
     @SuppressLint("SetTextI18n", "RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityCreatenoteBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_createnote)
 
         // Display current date
-        tvDateTime.text = "Terakhir diubah : " + SimpleDateFormat(
+        binding.tvDateTime.text = "Terakhir diubah : " + SimpleDateFormat(
             "dd MMMM yyyy", Locale.getDefault()
         ).format(Date())
 
@@ -54,23 +54,23 @@ class CreateNoteActivity : AppCompatActivity() {
         }
 
         if (modelNoteExtra != null) {
-            linearDelete.visibility = View.VISIBLE
-            btnDelete.setOnClickListener {
+            binding.linearDelete.visibility = View.VISIBLE
+            binding.btnDelete.setOnClickListener {
                 showDeleteDialog()
             }
         }
 
-        btnHapusUrl.setOnClickListener {
-            tvUrlNote.text = null
-            tvUrlNote.visibility = View.GONE
-            btnHapusUrl.visibility = View.GONE
+        binding.btnHapusUrl.setOnClickListener {
+            binding.tvUrlNote.text = null
+            binding.tvUrlNote.visibility = View.GONE
+            binding.btnHapusUrl.visibility = View.GONE
         }
 
-        btnAddUrl.setOnClickListener {
+        binding.btnAddUrl.setOnClickListener {
             showDialogUrl()
         }
 
-        btnAddImage.setOnClickListener {
+        binding.btnAddImage.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     applicationContext,
                     Manifest.permission.READ_EXTERNAL_STORAGE
@@ -84,17 +84,17 @@ class CreateNoteActivity : AppCompatActivity() {
             }
         }
 
-        fabDeleteImage.setOnClickListener {
-            imageNote.setImageBitmap(null)
-            imageNote.visibility = View.GONE
-            fabDeleteImage.visibility = View.GONE
+        binding.fabDeleteImage.setOnClickListener {
+            binding.imageNote.setImageBitmap(null)
+            binding.imageNote.visibility = View.GONE
+            binding.fabDeleteImage.visibility = View.GONE
             selectImagePath = ""
         }
 
-        fabSaveNote.setOnClickListener {
-            if (editTextTitle.text.toString().isEmpty()) {
+        binding.fabSaveNote.setOnClickListener {
+            if (binding.editTextTitle.text.toString().isEmpty()) {
                 Toast.makeText(this, "Judul Tidak Boleh Kosong", Toast.LENGTH_SHORT).show()
-            } else if (editTextSubTitle.text.toString().isEmpty() && editTextDesc.text.toString().isEmpty()) {
+            } else if (binding.editTextSubTitle.text.toString().isEmpty() && binding.editTextDesc.text.toString().isEmpty()) {
                 Toast.makeText(this, "Catatan Tidak Boleh Kosong", Toast.LENGTH_SHORT).show()
             } else {
                 saveNote()
@@ -104,21 +104,21 @@ class CreateNoteActivity : AppCompatActivity() {
 
     @SuppressLint("RestrictedApi")
     private fun setViewOrUpdateNote() {
-        editTextTitle.setText(modelNoteExtra?.title)
-        editTextSubTitle.setText(modelNoteExtra?.subTitle)
-        editTextDesc.setText(modelNoteExtra?.noteText)
+        binding.editTextTitle.setText(modelNoteExtra?.title)
+        binding.editTextSubTitle.setText(modelNoteExtra?.subTitle)
+        binding.editTextDesc.setText(modelNoteExtra?.noteText)
 
         if (!modelNoteExtra?.imagePath.isNullOrEmpty()) {
-            imageNote.setImageBitmap(BitmapFactory.decodeFile(modelNoteExtra?.imagePath))
-            imageNote.visibility = View.VISIBLE
+            binding.imageNote.setImageBitmap(BitmapFactory.decodeFile(modelNoteExtra?.imagePath))
+            binding.imageNote.visibility = View.VISIBLE
             selectImagePath = modelNoteExtra?.imagePath
-            fabDeleteImage.visibility = View.VISIBLE
+            binding.fabDeleteImage.visibility = View.VISIBLE
         }
 
         if (!modelNoteExtra?.url.isNullOrEmpty()) {
-            tvUrlNote.text = modelNoteExtra?.url
-            tvUrlNote.visibility = View.VISIBLE
-            btnHapusUrl.visibility = View.VISIBLE
+            binding.tvUrlNote.text = modelNoteExtra?.url
+            binding.tvUrlNote.visibility = View.VISIBLE
+            binding.btnHapusUrl.visibility = View.VISIBLE
         }
     }
 
@@ -146,9 +146,9 @@ class CreateNoteActivity : AppCompatActivity() {
                 try {
                     contentResolver.openInputStream(selectImgUri)?.let { inputStream ->
                         val bitmap = BitmapFactory.decodeStream(inputStream)
-                        imageNote.setImageBitmap(bitmap)
-                        imageNote.visibility = View.VISIBLE
-                        fabDeleteImage.visibility = View.VISIBLE
+                        binding.imageNote.setImageBitmap(bitmap)
+                        binding.imageNote.visibility = View.VISIBLE
+                        binding.fabDeleteImage.visibility = View.VISIBLE
                         selectImagePath = getPathFromUri(selectImgUri)
                     }
                 } catch (e: Exception) {
@@ -171,13 +171,14 @@ class CreateNoteActivity : AppCompatActivity() {
     }
 
     private fun showDeleteDialog() {
+        val dialogBinding = LayoutDeleteBinding.inflate(layoutInflater)
         val dialog = Dialog(this@CreateNoteActivity)
-        dialog.setContentView(R.layout.layout_delete)
-        dialog.tvHapusCatatan.setOnClickListener {
+        dialog.setContentView(dialogBinding.root)
+        dialogBinding.tvHapusCatatan.setOnClickListener {
             deleteNote()
             dialog.dismiss()
         }
-        dialog.tvBatalHapus.setOnClickListener {
+        dialogBinding.tvBatalHapus.setOnClickListener {
             dialog.dismiss()
         }
         dialog.show()
@@ -205,32 +206,28 @@ class CreateNoteActivity : AppCompatActivity() {
     private fun showDialogUrl() {
         if (alertDialog == null) {
             val builder = AlertDialog.Builder(this)
-            val view = LayoutInflater.from(this).inflate(
-                R.layout.layout_url,
-                findViewById<ViewGroup>(R.id.layoutUrl)
-            )
-            builder.setView(view)
+            val dialogBinding = LayoutUrlBinding.inflate(layoutInflater)
+            builder.setView(dialogBinding.root)
             alertDialog = builder.create()
             alertDialog?.window?.setBackgroundDrawable(ColorDrawable(0))
 
-            val etUrl = view.editTextAddUrl
-            etUrl.requestFocus()
+            dialogBinding.editTextAddUrl.requestFocus()
 
-            view.tvOk.setOnClickListener {
-                val url = etUrl.text.toString().trim()
+            dialogBinding.tvOk.setOnClickListener {
+                val url = dialogBinding.editTextAddUrl.text.toString().trim()
                 if (url.isEmpty()) {
                     Toast.makeText(this, "Masukan Url", Toast.LENGTH_SHORT).show()
                 } else if (!Patterns.WEB_URL.matcher(url).matches()) {
                     Toast.makeText(this, "Url Anda Tidak Benar", Toast.LENGTH_SHORT).show()
                 } else {
-                    tvUrlNote.text = url
-                    tvUrlNote.visibility = View.VISIBLE
-                    btnHapusUrl.visibility = View.VISIBLE
+                    binding.tvUrlNote.text = url
+                    binding.tvUrlNote.visibility = View.VISIBLE
+                    binding.btnHapusUrl.visibility = View.VISIBLE
                     alertDialog?.dismiss()
                 }
             }
 
-            view.tvBatal.setOnClickListener {
+            dialogBinding.tvBatal.setOnClickListener {
                 alertDialog?.dismiss()
             }
         }
@@ -239,13 +236,13 @@ class CreateNoteActivity : AppCompatActivity() {
 
     private fun saveNote() {
         val modelNote = ModelNote().apply {
-            title = editTextTitle.text.toString()
-            subTitle = editTextSubTitle.text.toString()
-            noteText = editTextDesc.text.toString()
-            dateTime = tvDateTime.text.toString()
+            title = binding.editTextTitle.text.toString()
+            subTitle = binding.editTextSubTitle.text.toString()
+            noteText = binding.editTextDesc.text.toString()
+            dateTime = binding.tvDateTime.text.toString()
             imagePath = selectImagePath
-            if (tvUrlNote.visibility == View.VISIBLE) {
-                url = tvUrlNote.text.toString()
+            if (binding.tvUrlNote.visibility == View.VISIBLE) {
+                url = binding.tvUrlNote.text.toString()
             }
         }
 

@@ -9,32 +9,34 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.laurens.absensiapp.databinding.ActivityMainBinding
 import com.laurens.adapater.NoteAdapter
 import com.laurens.database.NoteDatabase
 import com.laurens.model.ModelNote
 import com.laurens.utils.onClickItemListener
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), onClickItemListener {
 
     private val modelNoteList: MutableList<ModelNote> = ArrayList()
     private var noteAdapter: NoteAdapter? = null
     private var onClickPosition = -1
+    private lateinit var binding: ActivityMainBinding
 
     @SuppressLint("Assert")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         assert(supportActionBar != null)
 
-        fabCreateNote.setOnClickListener {
+        binding.fabCreateNote.setOnClickListener {
             startActivityForResult(Intent(this@MainActivity, CreateNoteActivity::class.java), REQUEST_ADD)
         }
 
         noteAdapter = NoteAdapter(modelNoteList, this)
-        rvListNote.adapter = noteAdapter
+        binding.rvListNote.adapter = noteAdapter
 
         // Change mode List to Grid
         modeGrid()
@@ -44,11 +46,11 @@ class MainActivity : AppCompatActivity(), onClickItemListener {
     }
 
     private fun modeGrid() {
-        rvListNote.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        binding.rvListNote.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
     }
 
     private fun modeList() {
-        rvListNote.layoutManager = LinearLayoutManager(this)
+        binding.rvListNote.layoutManager = LinearLayoutManager(this)
     }
 
     private fun getNote(requestCode: Int, deleteNote: Boolean) {
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity(), onClickItemListener {
                 } else if (requestCode == REQUEST_ADD) {
                     modelNoteList.add(0, notes[0])
                     noteAdapter?.notifyItemInserted(0)
-                    rvListNote.smoothScrollToPosition(0)
+                    binding.rvListNote.smoothScrollToPosition(0)
                 } else if (requestCode == REQUEST_UPDATE) {
                     modelNoteList.removeAt(onClickPosition)
                     if (deleteNote) {
